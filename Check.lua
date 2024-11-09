@@ -1,5 +1,5 @@
 -- Список разрешенных игроков
-local allowedPlayers = {"PlayerName1", "PlayerName2", "PlayerName3"} -- замените на нужные имена
+local allowedPlayers = {"sigmamomentbublba", "PlayerName2", "PlayerName3"} -- замените на нужные имена
 
 -- Получаем текущего игрока
 local player = game.Players.LocalPlayer
