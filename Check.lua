@@ -5,4 +5,6 @@ if table.find(WhiteIDs, player.UserId) then
 	print("Разрешено")
 else
 	player:Kick("Вас нет в белом списке!")
+	print(WhiteIDs)
+	print(player)
 end
