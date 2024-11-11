@@ -1,23 +1,8 @@
--- Список разрешенных игроков
-local allowedPlayers = {"sigmamomentbublba", "PlayerName2", "PlayerName3"} -- замените на нужные имена
-
--- Получаем текущего игрока
+local WhiteIDs = {58085809581, 4739215471, 3261096198}
 local player = game.Players.LocalPlayer
-local isAllowed = false
 
--- Проверка, есть ли имя игрока в списке разрешенных
-for _, name in ipairs(allowedPlayers) do
-    if player.Name == name then
-        isAllowed = true
-        break
-    end
-end
-
--- Если игрок не разрешен, кик
-if not isAllowed then
-    player:Kick("Что-то я тебя здесь не видел:/")
-    return
+if table.find(WhiteIDs, player.UserId) then
+	print("Разрешено")
 else
-    print("Доступ разрешен")
-    -- Здесь можно продолжить выполнение скрипта для разрешённых игроков
+	player:Kick("Вас нет в белом списке!")
 end
