@@ -1,4 +1,4 @@
-local WhiteIDs = {5808580958, 4739215471, 3261096198, 7483516086}
+local WhiteIDs = {5808580958, 4739215471, 3261096198, 7483516086, 7603111242}
 local player = game.Players.LocalPlayer
 
 if table.find(WhiteIDs, player.UserId) then
