@@ -33,7 +33,7 @@ local teleportScript = [[
 		wait(1)
 
         humanoidRootPart.CFrame = teleportTarget.CFrame
-		wait(0.5)
+		wait(0.6)
 
         -- Телепорт всех объектов в Slapples к игроку
         for _, obj in ipairs(slapplesFolder:GetChildren()) do
