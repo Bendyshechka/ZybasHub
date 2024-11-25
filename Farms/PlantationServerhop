@@ -1,0 +1,137 @@
+-- Services
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local player = Players.LocalPlayer
+
+-- Переменные
+local placeId = game.PlaceId
+local teleportFunc = (syn and syn.queue_on_teleport) or queueonteleport or queue_on_teleport
+
+-- Код для queueonteleport
+local teleportScript = [[
+    -- Services
+    local Players = game:GetService("Players")
+    local TeleportService = game:GetService("TeleportService")
+    local HttpService = game:GetService("HttpService")
+    local player = Players.LocalPlayer
+
+    -- Переменные
+    local success, err = pcall(function()
+        local workspace = game:GetService("Workspace")
+        local lobby = workspace:WaitForChild("Lobby")
+        local portals = lobby:WaitForChild("Portals")
+        local normalArena = portals:WaitForChild("NormalArena")
+        local teleportTarget = normalArena:WaitForChild("PortalTrigger")
+        local arena = workspace:WaitForChild("Arena")
+        local island5 = arena:WaitForChild("island5")
+        local slapplesFolder = island5:WaitForChild("Slapples")
+
+        -- Телепорт игрока к точке Teleport1
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+		wait(1)
+
+        humanoidRootPart.CFrame = teleportTarget.CFrame
+		wait(0.5)
+
+        -- Телепорт всех объектов в Slapples к игроку
+        for _, obj in ipairs(slapplesFolder:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart then
+                obj:SetPrimaryPartCFrame(humanoidRootPart.CFrame)
+            elseif obj:IsA("BasePart") then
+                obj.CFrame = humanoidRootPart.CFrame
+            elseif obj:IsA("Folder") or obj:IsA("Model") then
+                for _, innerObj in ipairs(obj:GetDescendants()) do
+                    if innerObj:IsA("BasePart") then
+                        innerObj.CFrame = humanoidRootPart.CFrame
+                    end
+                end
+            end
+        end
+
+        -- Ждём 0.5 секунды
+        task.wait(1)
+
+        -- Сервер-хоп логика
+        local AllIDs = {}
+        local foundAnything = ""
+        local actualHour = os.date("!*t").hour
+        local placeId = game.PlaceId
+
+        -- Попытка загрузить файл с посещёнными серверами
+        local fileLoaded = pcall(function()
+            AllIDs = HttpService:JSONDecode(readfile("server-hop-temp.json"))
+        end)
+
+        -- Если файл отсутствует, создаём его с текущим временем
+        if not fileLoaded then
+            table.insert(AllIDs, actualHour)
+            pcall(function()
+                writefile("server-hop-temp.json", HttpService:JSONEncode(AllIDs))
+            end)
+        end
+
+        -- Функция для поиска нового сервера и подключения
+        local function TPReturner()
+            local Site
+            if foundAnything == "" then
+                Site = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100"))
+            else
+                Site = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. foundAnything))
+            end
+
+            local ID = ""
+            if Site.nextPageCursor and Site.nextPageCursor ~= "null" then
+                foundAnything = Site.nextPageCursor
+            end
+
+            local foundServer = false
+
+            for _, v in pairs(Site.data) do
+                local Possible = true
+                ID = tostring(v.id)
+                if tonumber(v.maxPlayers) > tonumber(v.playing) then
+                    for _, Existing in pairs(AllIDs) do
+                        if ID == tostring(Existing) then
+                            Possible = false
+                            break
+                        end
+                    end
+                    if Possible then
+                        table.insert(AllIDs, ID)
+                        foundServer = true
+                        pcall(function()
+                            writefile("server-hop-temp.json", HttpService:JSONEncode(AllIDs))
+                            TeleportService:TeleportToPlaceInstance(placeId, ID, player)
+                        end)
+                        wait(4)
+                    end
+                end
+            end
+
+            if not foundServer then
+                TeleportService:Teleport(placeId)
+            end
+        end
+
+        -- Запуск сервер-хопа
+        TPReturner()
+    end)
+
+    -- Если произошла ошибка, перезапускаем текущий плейс
+    if not success then
+        warn("Ошибка: " .. tostring(err))
+        TeleportService:Teleport(game.PlaceId)
+    end
+]]
+
+-- Проверяем поддержку queueonteleport
+if teleportFunc then
+    teleportFunc(teleportScript)
+else
+    warn("queueonteleport не поддерживается в вашем окружении.")
+end
+
+-- Выполняем начальный телепорт (в случае необходимости)
+TeleportService:Teleport(placeId)
