@@ -101,7 +101,41 @@ task.wait(Speed)
 end
 	end    
 })
+local RunService = game:GetService("RunService")
+local connection
 
+Tab:AddToggle({
+    Name = "Ударять бобов др. перчаткой(оптимизировано)",
+    Default = false,
+    Callback = function(Value)
+        _G.SlapBobClone = Value
+        if connection then connection:Disconnect() end
+        
+        if not Value then return end
+        
+        connection = RunService.Heartbeat:Connect(function()  -- Или RenderStepped
+            if not _G.SlapBobClone then
+                connection:Disconnect()
+                return
+            end
+            
+            for _, v in pairs(workspace:GetChildren()) do
+                if v.Name == "BobClone" and v:FindFirstChild("HumanoidRootPart") then
+                    local gloveEvent = ({
+                        ["Killstreak"] = "KSHit",
+                        ["Reaper"] = "ReaperHit",
+                        ["God's Hand"] = "Godshand",
+                        ["Tycoon"] = "GeneralHit"
+                    })[GloveSlap]
+                    
+                    if gloveEvent then
+                        game:GetService("ReplicatedStorage")[gloveEvent]:FireServer(v.HumanoidRootPart)
+                    end
+                end
+            end
+        end)
+    end
+})
 Tab:AddButton({
 	Name = "Ударять бобов своей перчаткой",
 	Callback = function()
